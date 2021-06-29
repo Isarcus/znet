@@ -1,7 +1,7 @@
-#ifndef ZNET_HPP
-#define ZNET_HPP
+#ifndef ZNET_H
+#define ZNET_H
 
-#include "neuron.hpp"
+#include "neuron.h"
 
 #include <vector>
 #include <string>

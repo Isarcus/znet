@@ -1,4 +1,4 @@
-#include "znet.hpp"
+#include "znet.h"
 
 #include <iostream>
 #include <random>
@@ -14,14 +14,14 @@ void print(dataset_t data);
 
 int main(int argc, char** argv)
 {
-    Network nw(4, 4, {});
+    Network nw(4, 4, {5});
 
     nw.randomizeWeights();
     dataset_t input(4);
 
     print(nw.process(input));
     std::cout << "\n";
-    for (int i = 0; i < 100000; i++)
+    for (int i = 0; i < 200000; i++)
     {
         input[0] = (rand(0, 1) > 0.5) ? 1 : 0;
         input[1] = (rand(0, 1) > 0.5) ? 1 : 0;
@@ -29,10 +29,10 @@ int main(int argc, char** argv)
         input[3] = (rand(0, 1) > 0.5) ? 1 : 0;
         dataset_t& output = input;
 
-        nw.train(input, output, 0.001);
+        nw.train(input, output, 0.002);
     }
     nw.printAll();
-    input = {1, 0, 1, 0};
+    input = {1, 1, 1, 0};
     print(nw.process(input));
 }
 

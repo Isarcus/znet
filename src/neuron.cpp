@@ -1,4 +1,4 @@
-#include "neuron.hpp"
+#include "neuron.h"
 
 namespace znet
 {

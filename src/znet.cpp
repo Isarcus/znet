@@ -1,4 +1,4 @@
-#include "znet.hpp"
+#include "znet.h"
 
 #include <cmath>
 #include <random>
