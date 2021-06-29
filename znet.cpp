@@ -39,12 +39,9 @@ const Neuron& Network::at(int layer, int neuronID) const
 void Network::randomizeWeights()
 {
     std::uniform_real_distribution<> uniform(-1.0, 1.0);
-    std::default_random_engine eng;
-    int* randMem = new int;
-    uint32_t seed = (uint32_t)(((uint64_t)randMem) >> 32);
+    uint32_t seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::cout << "Randomizing with seed: " << seed << "\n";
-    eng.seed(seed);
-    delete randMem;
+    std::default_random_engine eng(seed);
 
     LOOP_NETWORK
     {
