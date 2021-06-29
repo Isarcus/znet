@@ -23,6 +23,8 @@ Network::Network(int inputSize, int outputSize, std::vector<int> hiddenSizes)
         addLayer(size, 0);
     }
     addLayer(outputSize, 0);
+
+    setLayerActivationFunc(0, identity);
 }
 
 Neuron& Network::at(int layer, int neuronID)
@@ -36,9 +38,9 @@ const Neuron& Network::at(int layer, int neuronID) const
 }
 
 // Randomize all weights for all connections to be between 0 and 1
-void Network::randomizeWeights()
+void Network::randomizeWeights(double range)
 {
-    std::uniform_real_distribution<> uniform(-1.0, 1.0);
+    std::uniform_real_distribution<> uniform(-range, range);
     uint32_t seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::cout << "Randomizing with seed: " << seed << "\n";
     std::default_random_engine eng(seed);
@@ -58,6 +60,17 @@ void Network::resetNeuronInputs()
     LOOP_NETWORK
     {
         nn.resetInput();
+    }
+}
+
+// Set the activation function for a layer
+void Network::setLayerActivationFunc(int layerIdx, activationFunc_t func)
+{
+    layer_t& layer = layers.at(layerIdx);
+
+    for (Neuron& nn : layer)
+    {
+        nn.outputFunc = func;
     }
 }
 
@@ -205,7 +218,7 @@ void Network::addLayer(int neurons, double defaultBiasFactor)
             {
                 nn_prev.connections.push_back({&nn_new, 0});
                 nn_prev.bias = defaultBiasFactor * layerPrev.size();
-                nn_prev.outputFunc = sigmoid;
+                nn_prev.outputFunc = rectifiedLeaky;
             }
         }
     }
@@ -237,6 +250,15 @@ double rectified(const double& v, const bool& deriv)
         return (v < 0) ? 0 : 1;
     else
         return std::max(v, 0.0);
+}
+
+double rectifiedLeaky(const double& v, const bool& deriv)
+{
+    constexpr static const double leak = 0.01;
+    if (deriv)
+        return (v < 0) ? leak : 1;
+    else
+        return (v < 0) ? v * leak : v;
 }
 
 double computeMSE(const dataset_t& correct, const dataset_t& actual)

@@ -19,11 +19,11 @@ int main(int argc, char** argv)
     ImageSet training(PATH_TRAIN_IMAGES, PATH_TRAIN_LABELS);
 
     Network nw(MNIST_IMG_SIZE, 10, {100, 100, 100});
-    nw.randomizeWeights();
+    nw.randomizeWeights(0.1);
 
     // Train
     dataset_t input(MNIST_IMG_SIZE);
-    for (int i = 0; i < 15000; i++)
+    for (int i = 0; i < 20000; i++)
     {
         const Image* img = training.nextImage();
         img->paste(input);

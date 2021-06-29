@@ -22,10 +22,12 @@ namespace znet
         Neuron& at(int layer, int neuronID);
         const Neuron& at(int layer, int neuronID) const;
 
-        void randomizeWeights();
+        void randomizeWeights(double range);
         void resetNeuronInputs();
+        void setLayerActivationFunc(int layerIdx, activationFunc_t func);
         void train(const dataset_t& input, const dataset_t& correct, double learningRate);
         dataset_t process(const dataset_t& input);
+
         void printAll() const;
 
         static void assignDeltas(layer_t& layer);
@@ -40,6 +42,7 @@ namespace znet
     double sigmoid(const double& v, const bool& deriv);
     double identity(const double& v, const bool& deriv);
     double rectified(const double& v, const bool& deriv);
+    double rectifiedLeaky(const double& v, const bool& deriv);
 
     double computeMSE(dataset_t& correct, const dataset_t& actual);
 
