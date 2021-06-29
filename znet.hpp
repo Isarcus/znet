@@ -26,6 +26,7 @@ namespace znet
         void resetNeuronInputs();
         void train(const dataset_t& input, const dataset_t& correct, double learningRate);
         dataset_t process(const dataset_t& input);
+        void printAll() const;
 
         static void assignDeltas(layer_t& layer);
         static void assignDeltas(layer_t& layerLast, const dataset_t& correct);
@@ -40,6 +41,8 @@ namespace znet
     double identity(const double& v, const bool& deriv);
 
     double computeMSE(dataset_t& correct, const dataset_t& actual);
+
+    std::ostream& operator<<(std::ostream& os, const std::vector<std::pair<Neuron*, double>>& weights);
 
     template<typename T1, typename T2>
     void exit_if_bad_vecs(const std::vector<T1>& v1, const std::vector<T2>& v2, std::string reason);

@@ -38,7 +38,7 @@ const Neuron& Network::at(int layer, int neuronID) const
 // Randomize all weights for all connections to be between 0 and 1
 void Network::randomizeWeights()
 {
-    std::uniform_real_distribution<> uniform(0.0, 1.0);
+    std::uniform_real_distribution<> uniform(-1.0, 1.0);
     std::default_random_engine eng;
     int* randMem = new int;
     uint32_t seed = (uint32_t)(((uint64_t)randMem) >> 32);
@@ -162,6 +162,24 @@ void Network::assignDeltas(layer_t& layerLast, const dataset_t& correct)
     }
 }
 
+void Network::printAll() const
+{
+    for (unsigned i = 0; i < layers.size(); i++)
+    {
+        std::cout << "\033[1;31mLayer #" << i << "\033[0m\n";
+        for (unsigned j = 0; j < layers[i].size(); j++)
+        {
+            const Neuron& nn = layers[i][j];
+            std::cout << " -> Neuron [" << j << "]:\n"
+                      << "   -> weights: " << nn.connections << "\n"
+                      << "   -> delta: " << nn.data.delta << "\n"
+                      << "   -> activation: " << nn.data.activation << "\n"
+                      << "   -> output: " << nn.data.output << "\n";
+        }
+    }
+    std::cout << "\n";
+}
+
 void Network::addLayer(int neurons, double defaultBiasFactor)
 {
     // Check neuron count
@@ -229,6 +247,16 @@ double computeMSE(const dataset_t& correct, const dataset_t& actual)
     }
 
     return sum / correct.size();
+}
+
+std::ostream& operator<<(std::ostream& os, const std::vector<std::pair<Neuron*, double>>& weights)
+{
+    os << "{ ";
+    for (const auto& conn : weights)
+    {
+        os << conn.second << " ";
+    }
+    return os << "}";
 }
 
 } // namespace znet
