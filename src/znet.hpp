@@ -61,9 +61,9 @@ void exit_if_bad_vecs(const std::vector<T1>& v1, const std::vector<T2>& v2, std:
 {
     if (!v1.size() || v1.size() != v2.size())
     {
-        std::cerr << "Invalid sizes [" << reason << "]:\n"
-        << " -> first  = " << v1.size()
-        << " -> second = " << v2.size();
+        std::cerr << "Invalid vectors [" << reason << "]:\n"
+        << " -> first  = " << v1.size() << "\n"
+        << " -> second = " << v2.size() << "\n";
 
         exit(-1);
     }

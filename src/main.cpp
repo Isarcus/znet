@@ -14,23 +14,25 @@ void print(dataset_t data);
 
 int main(int argc, char** argv)
 {
-    Network nw(2, 2, {5, 5});
+    Network nw(4, 4, {});
 
     nw.randomizeWeights();
-    dataset_t input;
+    dataset_t input(4);
 
-    input = {0, 0};
     print(nw.process(input));
     std::cout << "\n";
-    for (int i = 0; i < 200000; i++)
+    for (int i = 0; i < 100000; i++)
     {
-        input[0] = i % 2;
-        input[1] = (i + 1) % 2;
+        input[0] = (rand(0, 1) > 0.5) ? 1 : 0;
+        input[1] = (rand(0, 1) > 0.5) ? 1 : 0;
+        input[2] = (rand(0, 1) > 0.5) ? 1 : 0;
+        input[3] = (rand(0, 1) > 0.5) ? 1 : 0;
+        dataset_t& output = input;
 
-        nw.train(input, dataset_t{input[1], input[0]}, 0.0009);
+        nw.train(input, output, 0.001);
     }
-    //nw.printAll();
-    input = {1, 0};
+    nw.printAll();
+    input = {1, 0, 1, 0};
     print(nw.process(input));
 }
 
@@ -38,7 +40,7 @@ double rand(double min, double max)
 {
     static bool calledYet = false;
     static std::default_random_engine eng;
-    
+
     if (!calledYet)
     {
         eng.seed(std::chrono::system_clock::now().time_since_epoch().count());
