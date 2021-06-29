@@ -20,9 +20,9 @@ Network::Network(int inputSize, int outputSize, std::vector<int> hiddenSizes)
     addLayer(inputSize, 0);
     for (const int& size : hiddenSizes)
     {
-        addLayer(size, -0.5);
+        addLayer(size, 0);
     }
-    addLayer(outputSize, -0.5);
+    addLayer(outputSize, 0);
 }
 
 Neuron& Network::at(int layer, int neuronID)
@@ -229,6 +229,14 @@ double identity(const double& v, const bool& deriv)
         return 1;
     else
         return v;
+}
+
+double rectified(const double& v, const bool& deriv)
+{
+    if (deriv)
+        return (v < 0) ? 0 : 1;
+    else
+        return std::max(v, 0.0);
 }
 
 double computeMSE(const dataset_t& correct, const dataset_t& actual)

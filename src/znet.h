@@ -39,6 +39,7 @@ namespace znet
 
     double sigmoid(const double& v, const bool& deriv);
     double identity(const double& v, const bool& deriv);
+    double rectified(const double& v, const bool& deriv);
 
     double computeMSE(dataset_t& correct, const dataset_t& actual);
 
