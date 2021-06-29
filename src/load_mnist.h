@@ -1,6 +1,8 @@
 #ifndef LOAD_MNIST_H
 #define LOAD_MNIST_H
 
+#include "znet.h"
+
 #include <string>
 #include <vector>
 
@@ -32,6 +34,8 @@ namespace znet
 
         const Image* at(int i) const;
         const Image* nextImage();
+
+        trainingset_t* convertToRaw() const;
 
     private:
         unsigned idx;

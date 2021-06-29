@@ -13,6 +13,12 @@ namespace znet
 {
     typedef std::vector<double> dataset_t;
 
+    typedef struct trainingset_t
+    {
+        std::vector<dataset_t> inputs;
+        std::vector<dataset_t> outputs;
+    } trainingset_t;
+
     class Network
     {
     public:

@@ -122,4 +122,22 @@ const Image* ImageSet::nextImage()
     return images[idx++];
 }
 
+trainingset_t* ImageSet::convertToRaw() const
+{
+    trainingset_t* data = new trainingset_t;
+    data->inputs = std::vector<dataset_t>(images.size());
+    data->outputs = std::vector<dataset_t>(images.size());
+
+    dataset_t img_data(MNIST_IMG_SIZE);
+    for (unsigned i = 0; i < images.size(); i++)
+    {
+        images[i]->paste(img_data);
+        data->inputs.at(i) = img_data;
+        data->outputs.at(i) = dataset_t(10);
+        data->outputs[i][images[i]->label] = 1;
+    }
+
+    return data;
+}
+
 } // namespace znet

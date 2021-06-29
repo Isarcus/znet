@@ -14,7 +14,17 @@ constexpr const char* PATH_TRAIN_LABELS = "data/train-labels.idx1-ubyte";
 double rand(double min, double max);
 void print(dataset_t data);
 
+void trainBatches();
+
 int main(int argc, char** argv)
+{
+    trainBatches();
+
+    return 0;
+}
+
+// Train on most of the data set
+void trainBatches()
 {
     ImageSet training(PATH_TRAIN_IMAGES, PATH_TRAIN_LABELS);
 
