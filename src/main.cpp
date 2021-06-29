@@ -21,21 +21,28 @@ int main(int argc, char** argv)
     Network nw(MNIST_IMG_SIZE, 10, {100, 100, 100});
     nw.randomizeWeights(0.1);
 
-    // Train
-    dataset_t input(MNIST_IMG_SIZE);
-    for (int i = 0; i < 20000; i++)
+    // Train on data
+    for (int i = 0; i < 2000; i++)
     {
-        const Image* img = training.nextImage();
-        img->paste(input);
+        // Create batch
+        constexpr const int SIZE_BATCH = 20;
+        std::vector<dataset_t> inputBatch(SIZE_BATCH);
+        std::vector<dataset_t> correctBatch(SIZE_BATCH);
+        for (int j = 0; j < SIZE_BATCH; j++)
+        {
+            const Image* img = training.nextImage();
+            inputBatch[j] = dataset_t(MNIST_IMG_SIZE);
+            img->paste(inputBatch[j]);
+            correctBatch[j] = dataset_t(10);
+            correctBatch[j][img->label] = 1;
+        }
 
-        dataset_t output(10);
-        output[img->label] = 1;
-
-        nw.train(input, output, 0.001);
+        nw.train(inputBatch, correctBatch, 0.01);
     }
 
     // Test accuracy
     int numCorrect = 0;
+    dataset_t input(MNIST_IMG_SIZE);
     for (int i = 0; i < 1000; i++)
     {
         const Image* img = training.nextImage();

@@ -77,9 +77,7 @@ void Network::setLayerActivationFunc(int layerIdx, activationFunc_t func)
 // Train network on the provided data
 void Network::train(const dataset_t& input, const dataset_t& correct, double learningRate)
 {
-    dataset_t result = process(input);
-
-    exit_if_bad_vecs(layers.back(), correct, "training data");
+    process(input);
 
     // Compute deltas for all layers
     assignDeltas(layers.back(), correct);
@@ -99,6 +97,62 @@ void Network::train(const dataset_t& input, const dataset_t& correct, double lea
 
                 // and it all comes down to this
                 conn.second -= learningRate * deriv;
+            }
+        }
+    }
+}
+
+// Train network on a batch of provided data
+void Network::train(const std::vector<dataset_t>& input, const std::vector<dataset_t>& correct, double learningRate)
+{
+    // Allocate space for changes to be made
+    //  layers    neurons    weights
+    std::vector<std::vector<dataset_t>> changes(layers.size());
+    for (unsigned i = 0; i < changes.size(); i++)
+    {
+        changes[i] = std::vector<dataset_t>(layers[i].size());
+        for (unsigned j = 0; j < changes[i].size(); j++)
+        {
+            changes[i][j] = dataset_t(layers[i][j].connections.size());
+        }
+    }
+    
+    // Loop through all training sets
+    for (unsigned setIdx = 0; setIdx < input.size(); setIdx++)
+    {
+        process(input[setIdx]);
+
+        assignDeltas(layers.back(), correct[setIdx]);
+        for (int i = layers.size() - 2; i >= 0; i--)
+        {
+            assignDeltas(layers[i]);
+        }
+
+        // Add desired changes to 'changes' vector
+        for (unsigned i = 0; i < changes.size(); i++)
+        {
+            for (unsigned j = 0; j < changes[i].size(); j++)
+            {
+                const Neuron& nn = layers[i][j];
+                for (unsigned k = 0; k < changes[i][j].size(); k++)
+                {
+                    const auto& conn = nn.connections[k];
+
+                    changes[i][j][k] += conn.first->data.delta * nn.data.output;
+                }
+            }
+        }
+    }
+
+    // Apply changes
+    double batchSize = input.size();
+    for (unsigned i = 0; i < changes.size(); i++)
+    {
+        for (unsigned j = 0; j < changes[i].size(); j++)
+        {
+            for (unsigned k = 0; k < changes[i][j].size(); k++)
+            {
+                layers[i][j].connections[k].second -= learningRate * changes[i][j][k] / batchSize;
             }
         }
     }
@@ -164,6 +218,8 @@ void Network::assignDeltas(layer_t& layer)
 
 void Network::assignDeltas(layer_t& layerLast, const dataset_t& correct)
 {
+    exit_if_bad_vecs(layerLast, correct, "training data");
+
     for (unsigned i = 0; i < layerLast.size(); i++)
     {
         Neuron& nn = layerLast[i];
