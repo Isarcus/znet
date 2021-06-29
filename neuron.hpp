@@ -1,5 +1,5 @@
-#ifndef HEADER_NEURON_HPP
-#define HEADER_NEURON_HPP
+#ifndef NEURON_HPP
+#define NEURON_HPP
 
 #include <vector>
 #include <cstdint>
