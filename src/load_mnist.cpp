@@ -35,6 +35,19 @@ void Image::print() const
     std::cout << "\n";
 }
 
+void Image::paste(std::vector<double>& into) const
+{
+    if (into.size() < MNIST_IMG_SIZE)
+    {
+        throw std::runtime_error("Incorrect vector size!");
+    }
+
+    for (int i = 0; i < MNIST_IMG_SIZE; i++)
+    {
+        into[i] = data[i] / 255.0;
+    }
+}
+
 //          //
 // ImageSet //
 //          //

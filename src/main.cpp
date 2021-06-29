@@ -1,4 +1,5 @@
 #include "znet.h"
+#include "load_mnist.h"
 
 #include <iostream>
 #include <random>
@@ -7,34 +8,64 @@
 
 using namespace znet;
 
-static const int INPUT_SIZE = 2;
+constexpr const char* PATH_TRAIN_IMAGES = "data/train-images.idx3-ubyte";
+constexpr const char* PATH_TRAIN_LABELS = "data/train-labels.idx1-ubyte";
 
 double rand(double min, double max);
 void print(dataset_t data);
 
 int main(int argc, char** argv)
 {
-    Network nw(4, 4, {5});
+    ImageSet training(PATH_TRAIN_IMAGES, PATH_TRAIN_LABELS);
 
+    Network nw(MNIST_IMG_SIZE, 10, {100, 100, 100});
     nw.randomizeWeights();
-    dataset_t input(4);
 
-    print(nw.process(input));
-    std::cout << "\n";
-    for (int i = 0; i < 200000; i++)
+    // Train
+    dataset_t input(MNIST_IMG_SIZE);
+    for (int i = 0; i < 15000; i++)
     {
-        input[0] = (rand(0, 1) > 0.5) ? 1 : 0;
-        input[1] = (rand(0, 1) > 0.5) ? 1 : 0;
-        input[2] = (rand(0, 1) > 0.5) ? 1 : 0;
-        input[3] = (rand(0, 1) > 0.5) ? 1 : 0;
-        dataset_t& output = input;
+        const Image* img = training.nextImage();
+        img->paste(input);
 
-        nw.train(input, output, 0.002);
+        dataset_t output(10);
+        output[img->label] = 1;
+
+        nw.train(input, output, 0.001);
     }
-    nw.printAll();
-    input = {1, 1, 1, 0};
-    print(nw.process(input));
+
+    // Test accuracy
+    int numCorrect = 0;
+    for (int i = 0; i < 1000; i++)
+    {
+        const Image* img = training.nextImage();
+        img->paste(input);
+
+        // Find guess
+        dataset_t output = nw.process(input);
+        int guessIdx = -1;
+        double guessAct = 0;
+        for (int j = 0; j < 10; j++)
+        {
+            if (guessIdx == -1 || output[j] > guessAct)
+            {
+                guessIdx = j;
+                guessAct = output[j];
+            }
+        }
+
+        // Print guess info
+        std::cout << "[" << img->label << "]: " << guessIdx << " (" << guessAct << ")\n";
+
+        if (guessIdx == img->label) numCorrect++;
+    }
+
+    std::cout << "ACCURACY: " << numCorrect / 1000.0 << "\n";
 }
+
+//         //
+// Helpers //
+//         //
 
 double rand(double min, double max)
 {

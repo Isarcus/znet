@@ -20,6 +20,8 @@ namespace znet
         const byte& at(int x, int y) const;
         byte& at(int x, int y);
         void print() const;
+
+        void paste(std::vector<double>& into) const;
     } Image;
 
     class ImageSet
