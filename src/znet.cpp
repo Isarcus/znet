@@ -416,7 +416,7 @@ void Network::loadText(std::string path)
     // Empty the network
     layers = {};
 
-    // Load header
+    // Load header & allocate layers
     std::string header;
     std::getline(fin, header);
     std::vector<int> layerSizes = parse_str_vec<int>(header);
@@ -424,6 +424,7 @@ void Network::loadText(std::string path)
     {
         addLayer(size);
     }
+    setLayerActivationFunc(0, identity);
 
     // Load in layers
     std::string line;
