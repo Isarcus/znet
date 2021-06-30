@@ -12,6 +12,8 @@ using namespace znet;
 
 constexpr const char* PATH_TRAIN_IMAGES = "data/train-images-idx3-ubyte";
 constexpr const char* PATH_TRAIN_LABELS = "data/train-labels-idx1-ubyte";
+constexpr const char* PATH_TEST_IMAGES = "data/test-images-idx3-ubyte";
+constexpr const char* PATH_TEST_LABELS = "data/test-labels-idx1-ubyte";
 
 double rand(double min, double max);
 void print(dataset_t data);
@@ -24,16 +26,19 @@ int main(int argc, char** argv)
     nw.randomizeWeights(0.1);
 
     ImageSet* training = new ImageSet(PATH_TRAIN_IMAGES, PATH_TRAIN_LABELS);
-    auto data = training->convertToRaw();
+    auto data_train = training->convertToRaw();
+    delete training;
 
-    nw.train(*data, 30, 2, 0.1);
+    nw.train(*data_train, 30, 2, 0.1);
 
     // Test accuracy
-    int numCorrect = 0;
+    ImageSet testing(PATH_TEST_IMAGES, PATH_TEST_LABELS);
+
+    int numCorrect = 0, numTested = 0;
     dataset_t input(MNIST_IMG_SIZE);
-    for (int i = 0; i < 500; i++)
+    const Image* img;
+    while((img = testing.nextImage()))
     {
-        const Image *img = training->nextImage();
         img->paste(input);
 
         // Find guess
@@ -50,13 +55,14 @@ int main(int argc, char** argv)
         }
 
         // Print guess info
-        std::cout << "[" << img->label << "]: " << guessIdx << " (" << guessAct << ")\n";
+        //std::cout << "[" << img->label << "]: " << guessIdx << " (" << guessAct << ")\n";
 
+        numTested++;
         if (guessIdx == img->label)
             numCorrect++;
     }
 
-    std::cout << "ACCURACY: " << numCorrect / 500.0 << "\n";
+    std::cout << "ACCURACY: " << numCorrect / (double)numTested << "\n";
 
     return 0;
 }
