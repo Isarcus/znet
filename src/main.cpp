@@ -26,12 +26,12 @@ int main(int argc, char** argv)
     ImageSet* training = new ImageSet(PATH_TRAIN_IMAGES, PATH_TRAIN_LABELS);
     auto data = training->convertToRaw();
 
-    nw.train(*data, 1000, 1, 0.01);
+    nw.train(*data, 30, 2, 0.1);
 
     // Test accuracy
     int numCorrect = 0;
     dataset_t input(MNIST_IMG_SIZE);
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < 500; i++)
     {
         const Image *img = training->nextImage();
         img->paste(input);
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
             numCorrect++;
     }
 
-    std::cout << "ACCURACY: " << numCorrect / 1000.0 << "\n";
+    std::cout << "ACCURACY: " << numCorrect / 500.0 << "\n";
 
     return 0;
 }

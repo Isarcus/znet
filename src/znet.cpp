@@ -3,6 +3,7 @@
 #include <cmath>
 #include <random>
 #include <chrono>
+#include <cassert>
 
 #define LOOP_NETWORK for (auto& layer : layers) for (auto& nn : layer)
 
@@ -145,22 +146,27 @@ void Network::train(const trainingset_t& data, int batchSize, int epochs, double
     int numPairs = data.inputs.size();
     for (int pairIdx = 0; pairIdx < numPairs; pairIdx += batchSize)
     {
+        assert(changes[1][30][3] == 0);
+
         int howMany = std::min(numPairs - pairIdx, batchSize);
-        std::cout << "Training on pair " << pairIdx << "/" << numPairs << " (" << howMany << ")\n";
+        //std::cout << "Training on pair " << pairIdx << "/" << numPairs << " (" << howMany << ")\n";
 
         // Compute changes for this batch
         computeChanges(data, pairIdx, howMany, changes);
 
         // Apply average of changes and clear changes for next batch
-        applyChanges(changes, batchSize, howMany);
+        applyChanges(changes, howMany, learningRate);
     }
 
     // Tail recursive call
+    std::cout << "Epoch " << epochs << "\n";
     train(data, batchSize, epochs - 1, learningRate);
 }
 
 void Network::computeChanges(const trainingset_t &data, const int &startIdx, const int &howMany, std::vector<std::vector<dataset_t>> &changeVec)
 {
+    assert(howMany);
+
     for (int setIdx = startIdx; setIdx < startIdx + howMany; setIdx++)
     {
         process(data.inputs[setIdx]);
