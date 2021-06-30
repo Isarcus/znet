@@ -32,8 +32,13 @@ namespace znet
         void resetNeuronInputs();
         void setLayerActivationFunc(int layerIdx, activationFunc_t func);
         void train(const dataset_t& input, const dataset_t& correct, double learningRate);
-        void train(const std::vector<dataset_t>& input, const std::vector<dataset_t>& correct, double learningRate);
-        dataset_t process(const dataset_t& input);
+        void train(const trainingset_t& batch, double learningRate);
+        void train(const trainingset_t& data, int batchSize, int epochs, double learningRate);
+
+        void computeChanges(const trainingset_t& data, const int& startIdx, const int& howMany, std::vector<std::vector<dataset_t>>& changeVec);
+        void applyChanges(std::vector<std::vector<dataset_t>>& changeVec, const int& batchSize, const double& learningRate);
+
+        dataset_t process(const dataset_t &input);
 
         void printAll() const;
 

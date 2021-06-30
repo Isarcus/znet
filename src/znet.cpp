@@ -103,7 +103,7 @@ void Network::train(const dataset_t& input, const dataset_t& correct, double lea
 }
 
 // Train network on a batch of provided data
-void Network::train(const std::vector<dataset_t>& input, const std::vector<dataset_t>& correct, double learningRate)
+void Network::train(const trainingset_t& batch, double learningRate)
 {
     // Allocate space for changes to be made
     //  layers    neurons    weights
@@ -116,43 +116,88 @@ void Network::train(const std::vector<dataset_t>& input, const std::vector<datas
             changes[i][j] = dataset_t(layers[i][j].connections.size());
         }
     }
-    
-    // Loop through all training sets
-    for (unsigned setIdx = 0; setIdx < input.size(); setIdx++)
-    {
-        process(input[setIdx]);
 
-        assignDeltas(layers.back(), correct[setIdx]);
+    // Compute changes for this batch
+    computeChanges(batch, 0, batch.inputs.size(), changes);
+
+    // Apply changes for this batch
+    applyChanges(changes, batch.inputs.size(), learningRate);
+}
+
+// Perform full training on provided dataset
+void Network::train(const trainingset_t& data, int batchSize, int epochs, double learningRate)
+{
+    if (epochs < 1) return;
+
+    // Allocate space for changes to be made
+    //  layers    neurons    weights
+    std::vector<std::vector<dataset_t>> changes(layers.size());
+    for (unsigned i = 0; i < changes.size(); i++)
+    {
+        changes[i] = std::vector<dataset_t>(layers[i].size());
+        for (unsigned j = 0; j < changes[i].size(); j++)
+        {
+            changes[i][j] = dataset_t(layers[i][j].connections.size());
+        }
+    }
+
+    // Go through all batches and train
+    int numPairs = data.inputs.size();
+    for (int pairIdx = 0; pairIdx < numPairs; pairIdx += batchSize)
+    {
+        int howMany = std::min(numPairs - pairIdx, batchSize);
+        std::cout << "Training on pair " << pairIdx << "/" << numPairs << " (" << howMany << ")\n";
+
+        // Compute changes for this batch
+        computeChanges(data, pairIdx, howMany, changes);
+
+        // Apply average of changes and clear changes for next batch
+        applyChanges(changes, batchSize, howMany);
+    }
+
+    // Tail recursive call
+    train(data, batchSize, epochs - 1, learningRate);
+}
+
+void Network::computeChanges(const trainingset_t &data, const int &startIdx, const int &howMany, std::vector<std::vector<dataset_t>> &changeVec)
+{
+    for (int setIdx = startIdx; setIdx < startIdx + howMany; setIdx++)
+    {
+        process(data.inputs[setIdx]);
+
+        assignDeltas(layers.back(), data.outputs[setIdx]);
         for (int i = layers.size() - 2; i >= 0; i--)
         {
             assignDeltas(layers[i]);
         }
 
-        // Add desired changes to 'changes' vector
-        for (unsigned i = 0; i < changes.size(); i++)
+        // Add desired changes to 'changeVec'
+        for (unsigned i = 0; i < changeVec.size(); i++)
         {
-            for (unsigned j = 0; j < changes[i].size(); j++)
+            for (unsigned j = 0; j < changeVec[i].size(); j++)
             {
                 const Neuron& nn = layers[i][j];
-                for (unsigned k = 0; k < changes[i][j].size(); k++)
+                for (unsigned k = 0; k < changeVec[i][j].size(); k++)
                 {
                     const auto& conn = nn.connections[k];
 
-                    changes[i][j][k] += conn.first->data.delta * nn.data.output;
+                    changeVec[i][j][k] += conn.first->data.delta * nn.data.output;
                 }
             }
         }
     }
+}
 
-    // Apply changes
-    double batchSize = input.size();
-    for (unsigned i = 0; i < changes.size(); i++)
+void Network::applyChanges(std::vector<std::vector<dataset_t>> &changeVec, const int& batchSize, const double& learningRate)
+{
+    for (unsigned i = 0; i < changeVec.size(); i++)
     {
-        for (unsigned j = 0; j < changes[i].size(); j++)
+        for (unsigned j = 0; j < changeVec[i].size(); j++)
         {
-            for (unsigned k = 0; k < changes[i][j].size(); k++)
+            for (unsigned k = 0; k < changeVec[i][j].size(); k++)
             {
-                layers[i][j].connections[k].second -= learningRate * changes[i][j][k] / batchSize;
+                layers[i][j].connections[k].second -= learningRate * changeVec[i][j][k] / (double)batchSize;
+                changeVec[i][j][k] = 0;
             }
         }
     }
@@ -162,8 +207,8 @@ void Network::train(const std::vector<dataset_t>& input, const std::vector<datas
 // of all neurons in the process
 dataset_t Network::process(const dataset_t& input)
 {
-    exit_if_bad_vecs(layers, layers, "no layers");
-    exit_if_bad_vecs(input, layers.front(), "input size doesn't match input layer size");
+    //exit_if_bad_vecs(layers, layers, "no layers");
+    //exit_if_bad_vecs(input, layers.front(), "input size doesn't match input layer size");
 
     // Check if layers exist
     if (!layers.size())
@@ -218,7 +263,7 @@ void Network::assignDeltas(layer_t& layer)
 
 void Network::assignDeltas(layer_t& layerLast, const dataset_t& correct)
 {
-    exit_if_bad_vecs(layerLast, correct, "training data");
+    //exit_if_bad_vecs(layerLast, correct, "training data");
 
     for (unsigned i = 0; i < layerLast.size(); i++)
     {
