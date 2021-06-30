@@ -14,7 +14,7 @@ namespace znet
 
     typedef unsigned char byte;
 
-    typedef struct Image
+    typedef struct BrightnessMap
     {
         int label;
         byte data[MNIST_IMG_SIZE];
@@ -24,7 +24,7 @@ namespace znet
         void print() const;
 
         void paste(std::vector<double>& into) const;
-    } Image;
+    } BrightnessMap;
 
     class ImageSet
     {
@@ -32,14 +32,14 @@ namespace znet
         ImageSet(std::string path_images, std::string path_labels);
         ~ImageSet();
 
-        const Image* at(int i) const;
-        const Image* nextImage();
+        const BrightnessMap* at(int i) const;
+        const BrightnessMap* nextImage();
 
         trainingset_t* convertToRaw() const;
 
     private:
         unsigned idx;
-        std::vector<Image*> images;
+        std::vector<BrightnessMap*> images;
     };
 
 }

@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     ImageSet testing(PATH_TEST_IMAGES, PATH_TEST_LABELS);
     int numCorrect = 0, numTested = 0;
     dataset_t input(MNIST_IMG_SIZE);
-    const Image* img;
+    const BrightnessMap* img;
     while((img = testing.nextImage()))
     {
         img->paste(input);
@@ -92,7 +92,7 @@ void trainBatches()
         data.outputs = std::vector<dataset_t>(SIZE_BATCH);
         for (int j = 0; j < SIZE_BATCH; j++)
         {
-            const Image* img = training.nextImage();
+            const BrightnessMap* img = training.nextImage();
             data.inputs[j] = dataset_t(MNIST_IMG_SIZE);
             img->paste(data.inputs[j]);
             data.outputs[j] = dataset_t(10);
@@ -112,7 +112,7 @@ void trainBatches()
     dataset_t input(MNIST_IMG_SIZE);
     for (int i = 0; i < 1000; i++)
     {
-        const Image* img = training.nextImage();
+        const BrightnessMap* img = training.nextImage();
         img->paste(input);
 
         // Find guess
