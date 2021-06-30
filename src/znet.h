@@ -42,6 +42,9 @@ namespace znet
 
         void printAll() const;
 
+        void writeText(std::string path) const;
+        void loadText(std::string path);
+
         static void assignDeltas(layer_t& layer);
         static void assignDeltas(layer_t& layerLast, const dataset_t& correct);
 

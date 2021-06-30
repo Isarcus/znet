@@ -3,6 +3,8 @@
 #include <cmath>
 #include <random>
 #include <chrono>
+#include <fstream>
+#include <iomanip>
 #include <cassert>
 
 #define LOOP_NETWORK for (auto& layer : layers) for (auto& nn : layer)
@@ -295,6 +297,63 @@ void Network::printAll() const
         }
     }
     std::cout << "\n";
+}
+
+void Network::writeText(std::string path) const
+{
+    std::ofstream fout(path);
+
+    // Check if stream ok
+    if (fout.fail())
+    {
+        std::cout << "[ERROR] could not write to " << path << "\n"
+                  << " -> Would you like to try again? (Y/N) ";
+        
+        std::string ans;
+        std::cin >> ans;
+        if (ans.size() && std::toupper(ans[0]) == 'N')
+            return;
+
+        std::cout << "Please enter a new filepath, or enter nothing to try the same path:\n"
+                  << " -> ";
+        std::cin >> ans;
+        if (ans.size())
+            writeText(ans);
+        else
+            writeText(path);
+        
+        return;
+    }
+
+    // Write data
+    fout << std::fixed;
+    fout << std::setprecision(12);
+    for (unsigned i = 0; i < layers.size(); i++)
+    {
+        // Write header for each layer
+        fout << "LAYER " << i << "\n";
+        fout << "bias,weights\n";
+
+        for (unsigned j = 0; j < layers[i].size(); j++)
+        {
+            const Neuron& nn = layers[i][j];
+            fout << nn.bias << ",{";
+    
+            for (unsigned k = 0; k < nn.connections.size(); k++)
+            {
+                fout << nn.connections[k].second;
+                if (k < nn.connections.size() - 1) fout << ",";
+            }
+            fout << "}\n";
+        }
+
+        fout << "\n";
+    }
+}
+
+void Network::loadText(std::string path)
+{
+
 }
 
 void Network::addLayer(int neurons, double defaultBiasFactor)

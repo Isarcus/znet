@@ -64,6 +64,8 @@ int main(int argc, char** argv)
 
     std::cout << "ACCURACY: " << numCorrect / (double)numTested << "\n";
 
+    nw.writeText("saves/data.txt");
+
     return 0;
 }
 
