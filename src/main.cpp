@@ -22,18 +22,25 @@ void trainBatches();
 
 int main(int argc, char** argv)
 {
-    Network nw(MNIST_IMG_SIZE, 10, {100, 100, 100});
-    nw.randomizeWeights(0.1);
+    Network nw_train(MNIST_IMG_SIZE, 10, {100, 100, 100});
+    nw_train.randomizeWeights(0.1);
 
     ImageSet* training = new ImageSet(PATH_TRAIN_IMAGES, PATH_TRAIN_LABELS);
     auto data_train = training->convertToRaw();
     delete training;
 
-    nw.train(*data_train, 30, 2, 0.1);
+    // Train
+    nw_train.train(*data_train, 30, 3, 0.1);
+
+    // Save configuration
+    nw_train.writeText("saves/data.txt");
+
+    // Load configuration
+    Network nw_test;
+    nw_test.loadText("saves/data.txt");
 
     // Test accuracy
     ImageSet testing(PATH_TEST_IMAGES, PATH_TEST_LABELS);
-
     int numCorrect = 0, numTested = 0;
     dataset_t input(MNIST_IMG_SIZE);
     const Image* img;
@@ -42,7 +49,7 @@ int main(int argc, char** argv)
         img->paste(input);
 
         // Find guess
-        dataset_t output = nw.process(input);
+        dataset_t output = nw_test.process(input);
         int guessIdx = -1;
         double guessAct = 0;
         for (int j = 0; j < 10; j++)
@@ -63,8 +70,6 @@ int main(int argc, char** argv)
     }
 
     std::cout << "ACCURACY: " << numCorrect / (double)numTested << "\n";
-
-    nw.writeText("saves/data.txt");
 
     return 0;
 }

@@ -301,9 +301,15 @@ void Network::printAll() const
 
 void Network::writeText(std::string path) const
 {
-    std::ofstream fout(path);
+    // Check if network ok
+    if (!layers.size())
+    {
+        std::cout << "[ERROR] You can't save an empty network!\n";
+        return;
+    }
 
-    // Check if stream ok
+    // Open and check filestream
+    std::ofstream fout(path);
     if (fout.fail())
     {
         std::cout << "[ERROR] could not write to " << path << "\n"
@@ -325,6 +331,15 @@ void Network::writeText(std::string path) const
         return;
     }
 
+    // Write header
+    fout << "{";
+    for (unsigned i = 0; i < layers.size(); i++)
+    {
+        fout << layers[i].size();
+        if (i < layers.size() - 1) fout << ",";
+    }
+    fout << "}\n";
+
     // Write data
     fout << std::fixed;
     fout << std::setprecision(12);
@@ -332,7 +347,6 @@ void Network::writeText(std::string path) const
     {
         // Write header for each layer
         fout << "LAYER " << i << "\n";
-        fout << "bias,weights\n";
 
         for (unsigned j = 0; j < layers[i].size(); j++)
         {
@@ -349,11 +363,120 @@ void Network::writeText(std::string path) const
 
         fout << "\n";
     }
+
+    fout.close();
+}
+
+template <typename T>
+std::vector<T> parse_str_vec(std::string str)
+{
+    std::vector<T> arr;
+
+    if (str.size() == 0 || str.front() != '{' || str.back() != '}')
+    {
+        throw std::runtime_error("Can't parse string to vector: " + str);
+    }
+
+    // Remove {} around array
+    str = str.substr(1, str.size()-1);
+    
+    // If empty array, just return now
+    if (str.find(',') == std::string::npos) return arr;
+
+    while (true)
+    {
+        size_t idx_end = str.find(',');
+        if (idx_end != std::string::npos)
+        {
+            std::string str_num = str.substr(0, idx_end);
+            arr.push_back(std::stod(str_num));
+
+            str = str.substr(idx_end + 1, str.size());
+        }
+        else
+        {
+            arr.push_back(std::stod(str));
+            break;
+        }
+    }
+
+    return arr;
 }
 
 void Network::loadText(std::string path)
 {
+    // Open and check file
+    std::ifstream fin(path);
+    if (fin.fail())
+    {
+        std::cout << "[ERROR] Could not open file at " << path << "\n";
+        return;
+    }
 
+    // Empty the network
+    layers = {};
+
+    // Load header
+    std::string header;
+    std::getline(fin, header);
+    std::vector<int> layerSizes = parse_str_vec<int>(header);
+    for (int size : layerSizes)
+    {
+        addLayer(size);
+    }
+
+    // Load in layers
+    std::string line;
+    while (std::getline(fin, line)) // gets layer header
+    {
+        // Check header
+        if (line.substr(0, line.find(' ')) != "LAYER")
+        {
+            std::cout << "[ERROR] Layer header was incorrectly formatted: " << line << "\n";
+            return;
+        }
+        
+        // Check layer ID
+        unsigned layerID = std::stoi(line.substr(line.find(' ')+1, line.size()));
+        if (layerID >= layerSizes.size())
+        {
+            std::cout << "[ERROR] Layer should not exist: " << layerID << "\n";
+            return;
+        }
+
+        // With everything else ok, assign data to layer
+        layer_t& layer = layers[layerID];
+        for (unsigned i = 0; i < layers[layerID].size(); i++)
+        {
+            // Load neuron data
+            getline(fin, line);
+
+            // Get bias
+            size_t commaIdx = line.find(',');
+            layer[i].bias = std::stod(line.substr(0, commaIdx));
+            
+            // Get weights
+            line = line.substr(commaIdx+1, line.size());
+            std::vector<double> weights = parse_str_vec<double>(line);
+
+            // Check that size of weights match next layer's size
+            if (layerID < layers.size() - 1 && weights.size() != layers[layerID + 1].size())
+            {
+                std::cout << "[ERROR] Neuron has " << weights.size() << "input weights, "
+                          << " should have " << layer[i].connections.size() << "\n";
+                return;
+            }
+
+            // Assign weights (finally)
+            for (unsigned j = 0; j < weights.size(); j++)
+            {
+                layer[i].connections[j].second = weights[j];
+            }
+        }
+
+        // Call getline for gap between layers
+        std::getline(fin, line);
+    }
 }
 
 void Network::addLayer(int neurons, double defaultBiasFactor)
@@ -370,7 +493,6 @@ void Network::addLayer(int neurons, double defaultBiasFactor)
     for (int i = 0; i < neurons; i++)
     {
         Neuron& nn_new = layerNew[i];
-        nn_new.layerID = i;
         nn_new.outputFunc = identity;
 
         if (layers.size() > 1)
