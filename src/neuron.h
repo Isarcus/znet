@@ -25,7 +25,6 @@ namespace znet
         //         //
         // Members //
         //         //
-        uint64_t layerID;
         layer_t* layerPrev;
         activationFunc_t outputFunc;
 

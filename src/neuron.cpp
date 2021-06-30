@@ -4,8 +4,7 @@ namespace znet
 {
 
 Neuron::Neuron()
-    : layerID(0)
-    , layerPrev(nullptr)
+    : layerPrev(nullptr)
     , outputFunc(nullptr)
     , bias(0)
     , data{0, 0, 0, 0}
