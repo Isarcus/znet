@@ -55,13 +55,13 @@ void Image::paste(std::vector<double>& into) const
 ImageSet::ImageSet(std::string path_images, std::string path_labels)
     : idx(0)
 {
-    std::ifstream fin_image(path_images);
+    std::ifstream fin_image(path_images, std::ios_base::binary);
     if (fin_image.fail())
     {
         throw std::runtime_error("Could not load training data at " + path_images);
     }
 
-    std::ifstream fin_label(path_labels);
+    std::ifstream fin_label(path_labels, std::ios_base::binary);
     if (fin_label.fail())
     {
         throw std::runtime_error("Could not load training data at " + path_labels);
