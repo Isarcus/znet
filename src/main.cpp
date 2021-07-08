@@ -22,31 +22,32 @@ void trainBatches();
 
 int main(int argc, char** argv)
 {
-    Network nw_train(MNIST_IMG_SIZE, 10, {100, 100, 100});
-    nw_train.randomizeWeights(0.1);
+    // Network nw_train(MNIST_IMG_SIZE, 10, {100, 100, 100});
+    // nw_train.randomizeWeights(0.1);
 
-    ImageSet* training = new ImageSet(PATH_TRAIN_IMAGES, PATH_TRAIN_LABELS);
-    auto data_train = training->convertToRaw();
-    delete training;
+    // ImageSet* training = new ImageSet(PATH_TRAIN_IMAGES, PATH_TRAIN_LABELS);
+    // auto data_train = training->convertToRaw();
+    // delete training;
 
     // Train
-    nw_train.train(*data_train, 30, 3, 0.1);
+    //nw_train.train(*data_train, 30, 3, 0.1);
 
     // Save configuration
-    nw_train.writeText("saves/data.txt");
+    //nw_train.writeText("saves/data.txt");
 
     // Load configuration
     Network nw_test;
     nw_test.loadText("saves/data.txt");
 
     // Test accuracy
-    ImageSet testing(PATH_TEST_IMAGES, PATH_TEST_LABELS);
+    ImageSet testing("data/homemade_data.bt", "data/homemade_labels.bt");
     int numCorrect = 0, numTested = 0;
     dataset_t input(MNIST_IMG_SIZE);
     const BrightnessMap* img;
     while((img = testing.nextImage()))
     {
         img->paste(input);
+        img->print();
 
         // Find guess
         dataset_t output = nw_test.process(input);
