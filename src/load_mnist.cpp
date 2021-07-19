@@ -8,20 +8,20 @@ namespace znet
 {
 
 //       //
-// Image //
+// BrightnessMap //
 //       //
 
-const byte& Image::at(int x, int y) const
+const byte& BrightnessMap::at(int x, int y) const
 {
     return data[x * MNIST_IMG_WIDTH + y];
 }
 
-byte& Image::at(int x, int y)
+byte& BrightnessMap::at(int x, int y)
 {
     return data[x * MNIST_IMG_WIDTH + y];
 }
 
-void Image::print() const
+void BrightnessMap::print() const
 {
     std::cout << "Label " << label << "\n";
     for (int x = 0; x < MNIST_IMG_WIDTH; x++)
@@ -35,7 +35,7 @@ void Image::print() const
     std::cout << "\n";
 }
 
-void Image::paste(std::vector<double>& into) const
+void BrightnessMap::paste(std::vector<double>& into) const
 {
     if (into.size() < MNIST_IMG_SIZE)
     {
@@ -78,7 +78,7 @@ ImageSet::ImageSet(std::string path_images, std::string path_labels)
     // Read in all images
     while (true)
     {
-        Image* img = new Image;
+        BrightnessMap* img = new BrightnessMap;
         fin_image.read((char*)img->data, MNIST_IMG_SIZE);
 
         // Exit loop if reading image failed
@@ -101,18 +101,18 @@ ImageSet::ImageSet(std::string path_images, std::string path_labels)
 
 ImageSet::~ImageSet()
 {
-    for (Image*& img : images)
+    for (BrightnessMap*& img : images)
     {
         delete img;
     }
 }
 
-const Image* ImageSet::at(int i) const
+const BrightnessMap *ImageSet::at(int i) const
 {
     return images.at(i);
 }
 
-const Image* ImageSet::nextImage()
+const BrightnessMap *ImageSet::nextImage()
 {
     if (idx == images.size())
     {
