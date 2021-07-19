@@ -35,6 +35,8 @@ namespace znet
         void train(const trainingset_t& batch, double learningRate);
         void train(const trainingset_t& data, int batchSize, int epochs, double learningRate);
 
+        dataset_t getIdealInput(const dataset_t& outputCorrect, int iterations, double learningRate);
+
         void computeChanges(const trainingset_t& data, const int& startIdx, const int& howMany, std::vector<std::vector<dataset_t>>& changeVec);
         void applyChanges(std::vector<std::vector<dataset_t>>& changeVec, const int& batchSize, const double& learningRate);
 
@@ -59,7 +61,7 @@ namespace znet
     double rectified(const double& v, const bool& deriv);
     double rectifiedLeaky(const double& v, const bool& deriv);
 
-    double computeMSE(dataset_t& correct, const dataset_t& actual);
+    double computeMSE(const dataset_t& correct, const dataset_t& actual);
 
     std::ostream& operator<<(std::ostream& os, const std::vector<std::pair<Neuron*, double>>& weights);
 

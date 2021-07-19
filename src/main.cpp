@@ -22,18 +22,18 @@ void trainBatches();
 
 int main(int argc, char** argv)
 {
-    Network nw_train(MNIST_IMG_SIZE, 10, {100, 100, 100});
-    nw_train.randomizeWeights(0.1);
+    // Network nw_train(MNIST_IMG_SIZE, 10, {100, 100, 100});
+    // nw_train.randomizeWeights(0.1);
 
-    ImageSet* training = new ImageSet(PATH_TRAIN_IMAGES, PATH_TRAIN_LABELS);
-    auto data_train = training->convertToRaw();
-    delete training;
+    // ImageSet* training = new ImageSet(PATH_TRAIN_IMAGES, PATH_TRAIN_LABELS);
+    // auto data_train = training->convertToRaw();
+    // delete training;
 
-    // Train
-    nw_train.train(*data_train, 30, 3, 0.1);
+    // // Train
+    // nw_train.train(*data_train, 30, 3, 0.1);
 
-    // Save configuration
-    nw_train.writeText("saves/data.txt");
+    // // Save configuration
+    // nw_train.writeText("saves/data.txt");
 
     // Load configuration
     Network nw_test;
@@ -70,6 +70,11 @@ int main(int argc, char** argv)
     }
 
     std::cout << "ACCURACY: " << numCorrect / (double)numTested << "\n";
+
+    // Get ideal input for a given output
+    dataset_t outputCorrect(10);
+    outputCorrect[1] = 1.0;
+    dataset_t ideal = nw_test.getIdealInput(outputCorrect, 40000, 0.01);
 
     return 0;
 }
