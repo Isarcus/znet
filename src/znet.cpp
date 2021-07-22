@@ -4,8 +4,10 @@
 #include <random>
 #include <chrono>
 #include <fstream>
+#include <sstream>
 #include <iomanip>
 #include <cassert>
+#include <map>
 
 #define LOOP_NETWORK for (auto& layer : layers) for (auto& nn : layer)
 
@@ -163,6 +165,72 @@ void Network::train(const trainingset_t& data, int batchSize, int epochs, double
     // Tail recursive call
     std::cout << "Epoch " << epochs << "\n";
     train(data, batchSize, epochs - 1, learningRate);
+}
+
+void Network::test(const trainingset_t& testData, bool individualized)
+{
+    //                  correct, total
+    std::map<int, std::pair<int, int>> totals;
+
+    for (unsigned i = 0; i < testData.inputs.size(); i++)
+    {
+        dataset_t output = process(testData.inputs[i]);
+
+        int guessIdx = -1;
+        double guessSurety = 0;
+        for (unsigned j = 0; j < output.size(); j++)
+        {
+            if (guessSurety < output[j] || guessIdx == -1)
+            {
+                guessIdx = j;
+                guessSurety = output[j];
+            }
+        }
+
+        int actualIdx = -1;
+        double actualSurety = 0;
+        for (unsigned j = 0; j < testData.outputs[i].size(); j++)
+        {
+            if (actualSurety < testData.outputs[i][j] || actualIdx == -1)
+            {
+                actualIdx = j;
+                actualSurety = testData.outputs[i][j];
+            }
+        }
+
+        totals[actualIdx].second++;
+        if (actualIdx == guessIdx)
+        {
+            totals[actualIdx].first++;
+        }
+    }
+
+    int num_total = 0, num_correct = 0;
+    for (const auto& pair : totals)
+    {
+        num_correct += pair.second.first;
+        num_total += pair.second.second;
+    }
+    double pct = 100.0 * (double)num_correct / (double)num_total;
+
+    std::ostringstream os;
+    os << std::setprecision(4);
+    os << "- - - TEST RESULTS - - -\n"
+       << "Number of samples: " << num_total << "\n"
+       << "Number correct:    " << num_correct << "\n"
+       << "Percent correct:   " << pct << "%\n";
+    
+    if (individualized)
+    {
+        os << "Individualized results:\n";
+        for (const auto& pair : totals)
+        {
+            double pct_individual = 100.0 * (double)pair.second.first / (double)pair.second.second;
+            os << " -> " << pair.first << ": " << pair.second.first << "/" << pair.second.second << "  (" << pct_individual << "%)\n";
+        }
+    }
+
+    std::cout << os.str() << std::endl;
 }
 
 void Network::computeChanges(const trainingset_t &data, const int &startIdx, const int &howMany, std::vector<std::vector<dataset_t>> &changeVec)

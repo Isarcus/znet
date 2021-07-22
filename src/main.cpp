@@ -39,38 +39,15 @@ int main(int argc, char** argv)
     Network nw_test;
     nw_test.loadText("saves/data.txt");
 
-    // Test accuracy
-    ImageSet testing("data/homemade_data.bt", "data/homemade_labels.bt");
-    int numCorrect = 0, numTested = 0;
-    dataset_t input(MNIST_IMG_SIZE);
-    const BrightnessMap* img;
-    while((img = testing.nextImage()))
-    {
-        img->paste(input);
-        img->print();
+    // Test accuracy on MNIST data
+    ImageSet testing(PATH_TEST_IMAGES, PATH_TEST_LABELS);
+    trainingset_t* testing_set = testing.convertToRaw();
+    nw_test.test(*testing_set, true);
 
-        // Find guess
-        dataset_t output = nw_test.process(input);
-        int guessIdx = -1;
-        double guessAct = 0;
-        for (int j = 0; j < 10; j++)
-        {
-            if (guessIdx == -1 || output[j] > guessAct)
-            {
-                guessIdx = j;
-                guessAct = output[j];
-            }
-        }
-
-        // Print guess info
-        //std::cout << "[" << img->label << "]: " << guessIdx << " (" << guessAct << ")\n";
-
-        numTested++;
-        if (guessIdx == img->label)
-            numCorrect++;
-    }
-
-    std::cout << "ACCURACY: " << numCorrect / (double)numTested << "\n";
+    // Test accuracy on homemade data
+    ImageSet homemade("data/images_me_10x18.bt", "data/labels_me_10x18.bt");
+    trainingset_t* homemade_set = homemade.convertToRaw();
+    nw_test.test(*homemade_set, true);
 
     return 0;
 }
