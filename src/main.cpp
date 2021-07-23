@@ -29,11 +29,11 @@ int main(int argc, char** argv)
     // auto data_train = training->convertToRaw();
     // delete training;
 
-    // Train
-    //nw_train.train(*data_train, 30, 3, 0.1);
+    // // Train
+    // nw_train.train(*data_train, 30, 3, 0.1);
 
-    // Save configuration
-    //nw_train.writeText("saves/data.txt");
+    // // Save configuration
+    // nw_train.writeText("saves/data.txt");
 
     // Load configuration
     Network nw_test;
@@ -48,6 +48,11 @@ int main(int argc, char** argv)
     ImageSet homemade("data/images_me_10x18.bt", "data/labels_me_10x18.bt");
     trainingset_t* homemade_set = homemade.convertToRaw();
     nw_test.test(*homemade_set, true);
+
+    // Example of getting ideal input for a given output
+    dataset_t outputCorrect(10);
+    outputCorrect[1] = 1.0;
+    dataset_t ideal = nw_test.getIdealInput(outputCorrect, 40000, 0.01);
 
     return 0;
 }

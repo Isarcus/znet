@@ -233,6 +233,56 @@ void Network::test(const trainingset_t& testData, bool individualized)
     std::cout << os.str() << std::endl;
 }
 
+dataset_t Network::getIdealInput(const dataset_t& outputCorrect, int iterations, double learningRate)
+{
+    // Set up RNG
+    std::uniform_real_distribution<> uniform(0, 1);
+    uint32_t seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::cout << "Randomizing first input with seed: " << seed << "\n";
+    std::default_random_engine eng(seed);
+
+    // Initialize input layer
+    dataset_t input(layers.at(0).size());
+    for (auto& datum : input) datum = uniform(eng);
+
+    // Print pre-training error
+    {
+        dataset_t outputActual = process(input);
+        std::cout << "Pre-training error: " << computeMSE(outputCorrect, outputActual) << "\n";
+    }
+
+    // Perform "training"
+    for (int i = 0; i < iterations; i++)
+    {
+        // Go through initial steps of backpropagation, before any weights are modified
+        dataset_t outputActual = process(input);
+
+        assignDeltas(layers.back(), outputCorrect);
+        for (int i = layers.size() - 2; i >= 0; i--)
+        {
+            assignDeltas(layers[i]);
+        }
+        
+        // Compute deltas for input layer
+        std::vector<double> deltas(input.size());
+        const layer_t& layerFirst = layers.front();
+        for (unsigned nnIdx = 0; nnIdx < layerFirst.size(); nnIdx++)
+        {
+            const Neuron& nn = layerFirst[nnIdx];
+
+            input[nnIdx] -= nn.data.delta * nn.data.d_output * learningRate;
+        }
+    }
+
+    // Print post-training error
+    {
+        dataset_t outputActual = process(input);
+        std::cout << "Post-training error: " << computeMSE(outputCorrect, outputActual) << "\n";
+    }
+
+    return input;
+}
+
 void Network::computeChanges(const trainingset_t &data, const int &startIdx, const int &howMany, std::vector<std::vector<dataset_t>> &changeVec)
 {
     assert(howMany);
